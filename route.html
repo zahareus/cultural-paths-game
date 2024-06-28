@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚗 Культурні шляхи</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Avenir+Next:wght@400;700&display=swap');
+        body {
+            font-family: 'Avenir Next', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #instructions {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #instructions h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        #instructions p {
+            margin: 5px 0;
+        }
+        #game-container {
+            width: 800px;
+            height: 400px;
+            background-color: #e5e3df;
+            position: relative;
+            overflow: hidden;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23e5e3df"/><path d="M0 50 h100 M50 0 v100" stroke="%23c0c0c0" stroke-width="1"/></svg>');
+        }
+        .building {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            bottom: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            text-align: center;
+        }
+        #city-hall {
+            right: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="80" y="20" fill="%23f4d03f"/><polygon points="0,20 50,0 100,20" fill="%23f1c40f"/><rect width="20" height="30" x="40" y="70" fill="%23d4ac0d"/></svg>');
+        }
+        #culture-house {
+            left: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="70" y="30" fill="%2398e3c5"/><circle cx="50" cy="30" r="20" fill="%2348c9b0"/><rect width="30" height="40" x="35" y="60" fill="%231abc9c"/></svg>');
+        }
+        #car {
+            position: absolute;
+            width: 60px;
+            height: 30px;
+            bottom: 10px;
+            right: 80px; /* Центруємо машину відносно міськради */
+            transition: left 0.25s; /* Збільшена швидкість руху машини */
+        }
+        #car-body {
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30"><rect width="60" height="20" y="10" rx="5" fill="red"/><rect width="40" height="12" x="10" y="2" rx="3" fill="red"/></svg>');
+        }
+        .wheel {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            bottom: 0;
+            background-color: black;
+            border-radius: 50%;
+            transition: transform 0.1s linear;
+        }
+        #wheel-left {
+            left: 10px;
+        }
+        #wheel-right {
+            right: 10px;
+        }
+        #score, #timer {
+            position: absolute;
+            top: 10px;
+            font-size: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #score {
+            left: 10px;
+            transition: transform 0.5s;
+        }
+        #timer {
+            right: 10px;
+        }
+        #start-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #result-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        .flash {
+            animation: flash 0.5s;
+        }
+        .highlight {
+            animation: highlight 0.5s forwards;
+        }
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(255, 255, 255, 0.9); }
+            100% { background-color: yellow; }
+        }
+        .spinning {
+            animation: spin 0.2s infinite linear;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .scale-up {
+            animation: scaleUp 0.5s forwards;
+        }
+        @keyframes scaleUp {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        <h1>🚗 Культурні шляхи</h1>
+        <p>Допоможіть голові відділу культури подолати відстань між Будинком культури та Міськрадою.</p>
+        <p>Використовуйте клавіші навігації (стрілки "вліво" та "вправо") для здійснення поїздок.</p>
+    </div>
+    <div id="game-container">
+        <div id="city-hall" class="building">Міськрада</div>
+        <div id="culture-house" class="building">Будинок культури</div>
+        <div id="car">
+            <div id="car-body"></div>
+            <div id="wheel-left" class="wheel"></div>
+            <div id="wheel-right" class="wheel"></div>
+        </div>
+        <div id="score">Поїздки: <span id="trip-count">0</span></div>
+        <div id="timer">Час: 60</div>
+        <div id="start-message">▶️ Натисніть "Пробіл" (space) для початку гри</div>
+        <div id="result-message"></div>
+    </div>
+
+    <audio id="background-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="success-sound">
+        <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
+    </audio>
+    <audio id="end-trip-sound">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="game-over-sound">
+        <source src="https://www.soundjay.com/button/beep-09.wav" type="audio/wav">
+    </audio>
+    <audio id="victory-sound">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const car = document.getElementById('car');
+        const wheelLeft = document.getElementById('wheel-left');
+        const wheelRight = document.getElementById('wheel-right');
+        const scoreElement = document.getElementById('trip-count');
+        const timerElement = document.getElementById('timer');
+        const startMessage = document.getElementById('start-message');
+        const resultMessage = document.getElementById('result-message');
+        const backgroundMusic = document.getElementById('background-music');
+        const successSound = document.getElementById('success-sound');
+        const endTripSound = document.getElementById('end-trip-sound');
+        const gameOverSound = document.getElementById('game-over-sound');
+        const victorySound = document.getElementById('victory-sound');
+        const cityHall = document.getElementById('city-hall');
+        const cultureHouse = document.getElementById('culture-house');
+
+        let score = 0;
+        let timeLeft = 60;
+        let carPosition = 82.5; // Початкова позиція автомобіля біля міськради
+        let gameActive = false;
+        let gameTimer;
+        let lastDestination = null;
+        let wheelRotation = 0;
+
+        backgroundMusic.volume = 0.1;
+
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            timeLeft = 60;
+            carPosition = 82.5; // Початкова позиція автомобіля біля міськради
+            lastDestination = null;
+            car.style.left = `${carPosition}%`;
+            updateScore();
+            updateTimer();
+            backgroundMusic.play();
+            startMessage.style.display = 'none';
+            resultMessage.style.display = 'none';
+            document.addEventListener('keydown', handleKeyPress);
+            gameTimer = setInterval(updateTimer, 1000);
+        }
+
+        function handleKeyPress(e) {
+            if (!gameActive && e.code === 'Space') {
+                startGame();
+                return;
+            }
+
+            if (!gameActive) return;
+
+            if (e.key === 'ArrowLeft' && carPosition > 18.5) {
+                carPosition -= 2; // Збільшена швидкість руху машини
+                rotateWheels(-1);
+            } else if (e.key === 'ArrowRight' && carPosition < 81.5) {
+                carPosition += 2; // Збільшена швидкість руху машини
+                rotateWheels(1);
+            }
+
+            car.style.left = `${carPosition}%`;
+
+            if (carPosition <= 20 && carPosition >= 17 && lastDestination !== 'culture-house') {
+                reachedDestination('culture-house');
+            } else if (carPosition >= 80 && carPosition <= 83 && lastDestination !== 'city-hall') {
+                reachedDestination('city-hall');
+            }
+        }
+
+        function rotateWheels(direction) {
+            wheelLeft.classList.add('spinning');
+            wheelRight.classList.add('spinning');
+            setTimeout(() => {
+                wheelLeft.classList.remove('spinning');
+                wheelRight.classList.remove('spinning');
+            }, 500);
+        }
+
+        function reachedDestination(destination) {
+            if (lastDestination && lastDestination !== destination) {
+                score++;
+                updateScore();
+                successSound.play();
+                endTripSound.play();
+            }
+            lastDestination = destination;
+            if (destination === 'culture-house') {
+                cultureHouse.classList.remove('flash');
+                void cultureHouse.offsetWidth; // Trigger reflow
+                cultureHouse.classList.add('flash');
+            } else {
+                cityHall.classList.remove('flash');
+                void cityHall.offsetWidth; // Trigger reflow
+                cityHall.classList.add('flash');
+            }
+        }
+
+        function updateScore() {
+            scoreElement.textContent = `${score}`;
+            scoreElement.classList.add('scale-up');
+            setTimeout(() => {
+                scoreElement.classList.remove('scale-up');
+            }, 500);
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timerElement.textContent = `Час: ${timeLeft}`;
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0;
+            document.removeEventListener('keydown', handleKeyPress);
+            resultMessage.innerHTML = `<span style="color: green;">Зроблено поїздок: ${score}</span><div id="play-again">🔃 Перезавантажте сторінку для повторної гри</div>`;
+            resultMessage.style.display = 'block';
+            resultMessage.classList.add('highlight');
+            gameOverSound.play();
+            victorySound.play();
+        }
+
+        function resetGame() {
+            resultMessage.style.display = 'none';
+            startMessage.style.display = 'block';
+        }
+
+        document.addEventListener('keydown', handleKeyPress);
+    </script>
+</body>
+</html>
